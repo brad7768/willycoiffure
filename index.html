@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <script>
+    (function () {
+      var root = document.documentElement;
+      root.classList.add("js");
+      var choice = "auto";
+      try { choice = localStorage.getItem("willy-theme") || "auto"; } catch (e) {}
+      if (choice !== "light" && choice !== "dark") choice = "auto";
+      root.setAttribute("data-theme-choice", choice);
+      var theme = choice;
+      if (choice === "auto") {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      root.setAttribute("data-theme", theme);
+    })();
+  </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Willy & O Coiffure — Barbier à Gatineau</title>
@@ -13,28 +28,58 @@
 </head>
 <body>
   <header class="header">
-    <div class="header-inner">
+    <div class="header-pill">
       <a class="brand" href="index.html" aria-label="Willy &amp; O Coiffure — accueil">
-        <span class="brand-mark" aria-hidden="true"><span>W&amp;O</span></span>
-        <span class="brand-text"><strong>Willy &amp; O</strong><em>Coiffure</em></span>
+        <span class="brand-mark" aria-hidden="true">
+          <img src="mark.svg" width="40" height="40" alt="">
+        </span>
+        <span class="brand-text">
+          <strong>Willy &amp; <span>O Coiffure</span></strong>
+          <em>Barbier · Gatineau</em>
+        </span>
       </a>
-      <nav class="nav" aria-label="Navigation principale">
+      <div class="header-actions">
+        <a class="btn btn-gold header-call" href="tel:+18199189019">Appeler</a>
+        <button class="menu-toggle" type="button" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="site-menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+    <div class="site-menu" id="site-menu" aria-hidden="true">
+      <nav class="site-menu-panel" aria-label="Navigation principale">
         <a href="index.html" aria-current="page">Accueil</a>
         <a href="services.html">Services</a>
         <a href="contact.html">Contact</a>
+        <a class="btn btn-gold site-menu-call" href="tel:+18199189019">Appeler le (819) 918-9019</a>
+        <div class="theme-switch" role="radiogroup" aria-label="Thème du site">
+          <button type="button" class="theme-switch__opt" role="radio" aria-checked="true" data-theme-choice="auto">
+            <span class="theme-switch__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor"/></svg>
+            </span>
+            <span class="theme-switch__label">Auto</span>
+          </button>
+          <button type="button" class="theme-switch__opt" role="radio" aria-checked="false" data-theme-choice="light">
+            <span class="theme-switch__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+            </span>
+            <span class="theme-switch__label">Clair</span>
+          </button>
+          <button type="button" class="theme-switch__opt" role="radio" aria-checked="false" data-theme-choice="dark">
+            <span class="theme-switch__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 14.5A8.5 8.5 0 0 1 9.5 3 7 7 0 1 0 21 14.5z"/></svg>
+            </span>
+            <span class="theme-switch__label">Sombre</span>
+          </button>
+        </div>
       </nav>
-      <div class="header-actions">
-        <a class="btn btn-ghost" href="https://www.google.com/maps/place/Willy+%26+O+Coiffure/@45.4751829,-75.6952067,17z/data=!3m2!4b1!5s0x4cce1b3f373b9ae1:0xc9d4cb1a926b3ba6!4m6!3m5!1s0x4cce1b52ba546b9f:0x3650c0cee4173c97!8m2!3d45.4751829!4d-75.6926318!16s%2Fg%2F11mzr9w0m_" target="_blank" rel="noopener">Itinéraire</a>
-        <a class="btn btn-gold" href="tel:+18199189019">Appeler</a>
-        <button class="menu-toggle" type="button" aria-label="Ouvrir le menu" aria-expanded="false"><span></span><span></span><span></span></button>
-      </div>
     </div>
   </header>
+  <div class="site-menu-backdrop" hidden></div>
 
   <main>
     <section class="hero">
       <div class="wrap hero-grid">
-        <div>
+        <div class="reveal">
           <p class="kicker">Barbier à Gatineau</p>
           <h1>Willy &amp; O <span>Coiffure</span></h1>
           <p class="lede">Coupes nettes, accueil chaleureux, et un salon qui reste ouvert tard — y compris le samedi soir.</p>
@@ -49,7 +94,7 @@
             <a class="btn btn-ghost" href="contact.html">Nous trouver</a>
           </div>
         </div>
-        <div class="hero-visual">
+        <div class="hero-visual reveal">
           <figure class="hero-frame">
             <img src="01-twists-dos.jpg" width="532" height="666" alt="Vue de dos d’une coupe avec twists sur le dessus et un taper net, réalisée chez Willy &amp; O Coiffure.">
           </figure>
@@ -67,23 +112,23 @@
 
     <section class="section">
       <div class="wrap">
-        <div class="section-head">
+        <div class="section-head reveal">
           <p class="kicker">Le salon</p>
           <h2>Un accueil chaleureux, <em>un travail soigné.</em></h2>
           <p class="intro">Willy &amp; O Coiffure est un barbier de Gatineau, au 53 Rue Bellehumeur. On y vient pour une coupe précise, un fade net, une barbe bien taillée — et pour repartir satisfait.</p>
         </div>
-        <div class="cards-3">
-          <article class="card">
+        <div class="cards-3 reveal-stagger">
+          <article class="card reveal">
             <span class="tag">Coupe</span>
             <h3>Classique ou fade</h3>
             <p>Des coupes nettes, adaptées à votre style et à la texture de vos cheveux.</p>
           </article>
-          <article class="card">
+          <article class="card reveal">
             <span class="tag">Barbe</span>
             <h3>Taille et contour</h3>
             <p>Un contour propre, une barbe équilibrée, un fini soigné.</p>
           </article>
-          <article class="card">
+          <article class="card reveal">
             <span class="tag">Horaires</span>
             <h3>Ouvert tard</h3>
             <p>Idéal après le travail, et ouvert tard le samedi soir. Appelez pour confirmer.</p>
@@ -95,34 +140,34 @@
 
     <section class="section" id="realisations">
       <div class="wrap">
-        <div class="section-head">
+        <div class="section-head reveal">
           <p class="kicker">Galerie</p>
           <h2>Nos <em>réalisations.</em></h2>
           <p class="intro">Un aperçu du travail au salon : fades, twists, tresses, designs et coupes pour toute la famille.</p>
         </div>
-        <div class="gallery-grid">
-          <a class="gallery-item" href="01-twists-dos.jpg" data-lightbox>
+        <div class="gallery-grid reveal-stagger">
+          <a class="gallery-item reveal" href="01-twists-dos.jpg" data-lightbox>
             <img src="01-twists-dos.jpg" width="532" height="666" loading="lazy" alt="Vue de dos : twists sur le dessus et taper net.">
           </a>
-          <a class="gallery-item" href="02-twists-profil.jpg" data-lightbox>
+          <a class="gallery-item reveal" href="02-twists-profil.jpg" data-lightbox>
             <img src="02-twists-profil.jpg" width="425" height="440" loading="lazy" alt="Profil d’une coupe avec twists et dégradé sur les côtés.">
           </a>
-          <a class="gallery-item" href="03-tresses-salon.jpg" data-lightbox>
+          <a class="gallery-item reveal" href="03-tresses-salon.jpg" data-lightbox>
             <img src="03-tresses-salon.jpg" width="770" height="682" loading="lazy" alt="Client au salon avec des tresses et un contour net, dans le fauteuil du barbier.">
           </a>
-          <a class="gallery-item" href="04-curly-taper.jpg" data-lightbox>
+          <a class="gallery-item reveal" href="04-curly-taper.jpg" data-lightbox>
             <img src="04-curly-taper.jpg" width="872" height="650" loading="lazy" alt="Coupe sur cheveux bouclés et ondulés, avec un taper bas.">
           </a>
-          <a class="gallery-item" href="05-design-courbe.jpg" data-lightbox>
+          <a class="gallery-item reveal" href="05-design-courbe.jpg" data-lightbox>
             <img src="05-design-courbe.jpg" width="932" height="627" loading="lazy" alt="Coupe courte avec une ligne de design courbe tracée dans les cheveux.">
           </a>
-          <a class="gallery-item" href="06-afro-taper.jpg" data-lightbox>
+          <a class="gallery-item reveal" href="06-afro-taper.jpg" data-lightbox>
             <img src="06-afro-taper.jpg" width="776" height="585" loading="lazy" alt="Coupe afro bouclée avec un taper propre, vue de dos.">
           </a>
-          <a class="gallery-item" href="07-high-fade-ligne.jpg" data-lightbox>
+          <a class="gallery-item reveal" href="07-high-fade-ligne.jpg" data-lightbox>
             <img src="07-high-fade-ligne.jpg" width="622" height="505" loading="lazy" alt="Fade haut avec une ligne de démarcation nette.">
           </a>
-          <a class="gallery-item" href="08-coupe-enfant.jpg" data-lightbox>
+          <a class="gallery-item reveal" href="08-coupe-enfant.jpg" data-lightbox>
             <img src="08-coupe-enfant.jpg" width="913" height="765" loading="lazy" alt="Coupe enfant sur cheveux bouclés, vue de profil et de dos.">
           </a>
         </div>
@@ -131,30 +176,30 @@
 
     <section class="section" id="avis">
       <div class="wrap">
-        <div class="section-head">
+        <div class="section-head reveal">
           <p class="kicker">Avis Google</p>
           <h2>Ce que disent <em>les clients.</em></h2>
         </div>
         <div class="review-grid">
-          <div class="score-box">
+          <div class="score-box reveal">
             <div class="num">4,6</div>
             <p><span class="stars" aria-hidden="true">★★★★★</span><br>27 avis sur Google</p>
             <p style="margin-top:20px;"><a class="btn btn-gold" href="https://www.google.com/maps/place/Willy+%26+O+Coiffure/@45.4751829,-75.6952067,17z/data=!3m2!4b1!5s0x4cce1b3f373b9ae1:0xc9d4cb1a926b3ba6!4m6!3m5!1s0x4cce1b52ba546b9f:0x3650c0cee4173c97!8m2!3d45.4751829!4d-75.6926318!16s%2Fg%2F11mzr9w0m_" target="_blank" rel="noopener">Laisser un avis sur Google</a></p>
           </div>
-          <div class="quotes">
-            <figure class="quote">
+          <div class="quotes reveal-stagger">
+            <figure class="quote reveal">
               <blockquote>« Accueil chaleureux, coiffeur très professionnel. »</blockquote>
               <figcaption>Résumé des avis Google</figcaption>
             </figure>
-            <figure class="quote">
+            <figure class="quote reveal">
               <blockquote>« On voit qu’il aime son travail et qu’il veut que le client reparte satisfait. »</blockquote>
               <figcaption>Résumé des avis Google</figcaption>
             </figure>
-            <figure class="quote">
+            <figure class="quote reveal">
               <blockquote>« Très bon coiffeur, je recommande fortement ! Big up à Divin, il est talentueux. »</blockquote>
               <figcaption><strong>Alby Kafumba</strong> · 5 étoiles sur Google</figcaption>
             </figure>
-            <figure class="quote">
+            <figure class="quote reveal">
               <blockquote>« I have been looking for a place to cut my hair for the longest time and this place is just the right place. I highly recommend. »</blockquote>
               <figcaption><strong>Bya Kayumba</strong> · 5 étoiles sur Google</figcaption>
             </figure>
@@ -164,7 +209,7 @@
     </section>
 
     <section class="cta-band">
-      <div class="wrap">
+      <div class="wrap reveal">
         <h2>Passez au salon.</h2>
         <p>Pour un rendez-vous, appelez le (819) 918-9019. Nous sommes au 53 Rue Bellehumeur, à Gatineau.</p>
         <div class="cta-row">

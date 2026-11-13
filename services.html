@@ -1,6 +1,21 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+  <script>
+    (function () {
+      var root = document.documentElement;
+      root.classList.add("js");
+      var choice = "auto";
+      try { choice = localStorage.getItem("willy-theme") || "auto"; } catch (e) {}
+      if (choice !== "light" && choice !== "dark") choice = "auto";
+      root.setAttribute("data-theme-choice", choice);
+      var theme = choice;
+      if (choice === "auto") {
+        theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+      }
+      root.setAttribute("data-theme", theme);
+    })();
+  </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Services — Willy & O Coiffure</title>
@@ -13,27 +28,57 @@
 </head>
 <body>
   <header class="header">
-    <div class="header-inner">
+    <div class="header-pill">
       <a class="brand" href="index.html" aria-label="Willy &amp; O Coiffure — accueil">
-        <span class="brand-mark" aria-hidden="true"><span>W&amp;O</span></span>
-        <span class="brand-text"><strong>Willy &amp; O</strong><em>Coiffure</em></span>
+        <span class="brand-mark" aria-hidden="true">
+          <img src="mark.svg" width="40" height="40" alt="">
+        </span>
+        <span class="brand-text">
+          <strong>Willy &amp; <span>O Coiffure</span></strong>
+          <em>Barbier · Gatineau</em>
+        </span>
       </a>
-      <nav class="nav" aria-label="Navigation principale">
+      <div class="header-actions">
+        <a class="btn btn-gold header-call" href="tel:+18199189019">Appeler</a>
+        <button class="menu-toggle" type="button" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="site-menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+    <div class="site-menu" id="site-menu" aria-hidden="true">
+      <nav class="site-menu-panel" aria-label="Navigation principale">
         <a href="index.html">Accueil</a>
         <a href="services.html" aria-current="page">Services</a>
         <a href="contact.html">Contact</a>
+        <a class="btn btn-gold site-menu-call" href="tel:+18199189019">Appeler le (819) 918-9019</a>
+        <div class="theme-switch" role="radiogroup" aria-label="Thème du site">
+          <button type="button" class="theme-switch__opt" role="radio" aria-checked="true" data-theme-choice="auto">
+            <span class="theme-switch__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18Z" fill="currentColor"/></svg>
+            </span>
+            <span class="theme-switch__label">Auto</span>
+          </button>
+          <button type="button" class="theme-switch__opt" role="radio" aria-checked="false" data-theme-choice="light">
+            <span class="theme-switch__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+            </span>
+            <span class="theme-switch__label">Clair</span>
+          </button>
+          <button type="button" class="theme-switch__opt" role="radio" aria-checked="false" data-theme-choice="dark">
+            <span class="theme-switch__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 14.5A8.5 8.5 0 0 1 9.5 3 7 7 0 1 0 21 14.5z"/></svg>
+            </span>
+            <span class="theme-switch__label">Sombre</span>
+          </button>
+        </div>
       </nav>
-      <div class="header-actions">
-        <a class="btn btn-ghost" href="https://www.google.com/maps/place/Willy+%26+O+Coiffure/@45.4751829,-75.6952067,17z/data=!3m2!4b1!5s0x4cce1b3f373b9ae1:0xc9d4cb1a926b3ba6!4m6!3m5!1s0x4cce1b52ba546b9f:0x3650c0cee4173c97!8m2!3d45.4751829!4d-75.6926318!16s%2Fg%2F11mzr9w0m_" target="_blank" rel="noopener">Itinéraire</a>
-        <a class="btn btn-gold" href="tel:+18199189019">Appeler</a>
-        <button class="menu-toggle" type="button" aria-label="Ouvrir le menu" aria-expanded="false"><span></span><span></span><span></span></button>
-      </div>
     </div>
   </header>
+  <div class="site-menu-backdrop" hidden></div>
 
   <main>
     <section class="page-hero">
-      <div class="wrap">
+      <div class="wrap reveal">
         <p class="kicker">Services</p>
         <h1>Coupes, fades <em style="font-style:italic;color:var(--gold-2);">&amp; barbe.</em></h1>
         <p>Des services de barbier, faits avec soin. Les tarifs se confirment au salon — appelez-nous pour réserver ou pour une question.</p>
@@ -41,15 +86,15 @@
     </section>
     <section class="section">
       <div class="wrap">
-        <ul class="svc-list">
-          <li class="svc-item no-photo">
+        <ul class="svc-list reveal-stagger">
+          <li class="svc-item no-photo reveal">
             <div class="svc-text">
               <h2 class="svc-name">Coupe classique</h2>
               <p>Une coupe nette, adaptée à votre style.</p>
               <span class="svc-price">Sur demande</span>
             </div>
           </li>
-          <li class="svc-item">
+          <li class="svc-item reveal">
             <div class="svc-text">
               <h2 class="svc-name">Fade / dégradé</h2>
               <p>Dégradé propre, contour précis, fini soigné.</p>
@@ -59,7 +104,7 @@
               <img src="07-high-fade-ligne.jpg" width="622" height="505" loading="lazy" alt="Fade haut avec une ligne de démarcation nette, réalisé au salon.">
             </a>
           </li>
-          <li class="svc-item">
+          <li class="svc-item reveal">
             <div class="svc-text">
               <h2 class="svc-name">Cheveux bouclés</h2>
               <p>Coupe adaptée aux cheveux bouclés ou ondulés, avec un taper soigné.</p>
@@ -69,7 +114,7 @@
               <img src="04-curly-taper.jpg" width="872" height="650" loading="lazy" alt="Coupe sur cheveux bouclés et ondulés, avec un taper bas.">
             </a>
           </li>
-          <li class="svc-item">
+          <li class="svc-item reveal">
             <div class="svc-text">
               <h2 class="svc-name">Tresses</h2>
               <p>Tresses et contour net, réalisés au salon.</p>
@@ -79,21 +124,21 @@
               <img src="03-tresses-salon.jpg" width="770" height="682" loading="lazy" alt="Client au salon avec des tresses et un contour net, dans le fauteuil du barbier.">
             </a>
           </li>
-          <li class="svc-item no-photo">
+          <li class="svc-item no-photo reveal">
             <div class="svc-text">
               <h2 class="svc-name">Taille de barbe</h2>
               <p>Lignes, volume et contour pour une barbe équilibrée.</p>
               <span class="svc-price">Sur demande</span>
             </div>
           </li>
-          <li class="svc-item no-photo">
+          <li class="svc-item no-photo reveal">
             <div class="svc-text">
               <h2 class="svc-name">Coupe + barbe</h2>
               <p>Le duo complet, pour un look harmonieux.</p>
               <span class="svc-price">Sur demande</span>
             </div>
           </li>
-          <li class="svc-item">
+          <li class="svc-item reveal">
             <div class="svc-text">
               <h2 class="svc-name">Coupe enfant</h2>
               <p>Une coupe simple et soignée, dans le calme.</p>
@@ -103,7 +148,7 @@
               <img src="08-coupe-enfant.jpg" width="913" height="765" loading="lazy" alt="Coupe enfant sur cheveux bouclés, vue de profil et de dos.">
             </a>
           </li>
-          <li class="svc-item">
+          <li class="svc-item reveal">
             <div class="svc-text">
               <h2 class="svc-name">Design / motifs</h2>
               <p>Selon le barbier et le moment. Demandez au salon.</p>
@@ -114,11 +159,11 @@
             </a>
           </li>
         </ul>
-        <p class="note">Les services et les prix peuvent varier. Pour réserver ou confirmer un tarif, appelez le <a href="tel:+18199189019">(819) 918-9019</a>.</p>
+        <p class="note reveal">Les services et les prix peuvent varier. Pour réserver ou confirmer un tarif, appelez le <a href="tel:+18199189019">(819) 918-9019</a>.</p>
       </div>
     </section>
     <section class="cta-band">
-      <div class="wrap">
+      <div class="wrap reveal">
         <h2>Prêt pour une coupe?</h2>
         <p>Appelez le salon. Ouvert tard en semaine et le samedi soir.</p>
         <div class="cta-row">
