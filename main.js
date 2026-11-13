@@ -229,99 +229,245 @@
     });
   }
 
-  function initHeroDepth() {
-    const frame = document.querySelector(".hero-frame");
-    if (!frame) return;
-    const photo = frame.querySelector("img");
-    if (!photo) return;
+  function initHeroSlider() {
+    const hero = document.querySelector(".hero");
+    if (!hero || !hero.querySelector(".hero-bg")) return;
 
-    let enabled = false;
-    let tiltX = 0;
-    let tiltY = 0;
+    const photos = Array.prototype.slice.call(hero.querySelectorAll(".hero-bg-img"));
+    const headlines = Array.prototype.slice.call(hero.querySelectorAll(".hero-headline"));
+    const buttons = Array.prototype.slice.call(hero.querySelectorAll(".hero-progress-btn"));
+    const layer = hero.querySelector(".hero-bg");
+    if (!photos.length || !headlines.length) return;
+
+    const DURATION = 35000;
+    const EXIT_MS = 700;
+    let tick = 0;
+    let startedAt = performance.now();
+    let carried = 0;
+    let paused = false;
+    let exitTimer = 0;
     let paraY = 0;
-    let ticking = false;
+    let paraEnabled = false;
+    let paraTicking = false;
 
-    function canMotion() {
-      return (
-        !reduceMotion.matches &&
-        window.matchMedia("(min-width: 861px)").matches &&
-        window.matchMedia("(hover: hover) and (pointer: fine)").matches
-      );
+    headlines.forEach(function (el) {
+      if (el.getAttribute("data-anim") !== "stagger") return;
+      if (el.querySelector(".word")) return;
+      const text = el.textContent;
+      el.textContent = "";
+      text.split(/(\s+)/).forEach(function (part) {
+        if (/^\s+$/.test(part)) {
+          el.appendChild(document.createTextNode(part));
+          return;
+        }
+        if (!part) return;
+        const wordIndex = el.querySelectorAll(".word").length;
+        const span = document.createElement("span");
+        span.className = "word";
+        span.textContent = part;
+        span.style.setProperty("--i", String(wordIndex));
+        el.appendChild(span);
+      });
+    });
+
+    function imageIndex() { return ((tick % photos.length) + photos.length) % photos.length; }
+    function textIndex() { return ((tick % headlines.length) + headlines.length) % headlines.length; }
+
+    function preload(i) {
+      const photo = photos[((i % photos.length) + photos.length) % photos.length];
+      if (!photo) return;
+      photo.loading = "eager";
+      const src = photo.getAttribute("src");
+      if (!src) return;
+      const im = new Image();
+      im.src = src;
     }
 
-    function apply() {
-      ticking = false;
-      if (!enabled) {
-        photo.style.transform = "";
-        frame.style.transform = "";
+    function restartKenBurns(photo) {
+      photo.style.animation = "none";
+      void photo.offsetWidth;
+      photo.style.animation = "";
+    }
+
+    function setHeadline(index, animate) {
+      headlines.forEach(function (el, i) {
+        const on = i === index;
+        el.classList.toggle("is-leaving", false);
+        el.classList.toggle("is-active", on);
+        el.setAttribute("aria-hidden", on ? "false" : "true");
+        if (on && animate && !reduceMotion.matches) {
+          el.style.animation = "none";
+          void el.offsetWidth;
+          el.style.animation = "";
+          el.querySelectorAll(".word").forEach(function (word) {
+            word.style.animation = "none";
+            void word.offsetWidth;
+            word.style.animation = "";
+          });
+        }
+      });
+    }
+
+    function setPhoto(index) {
+      photos.forEach(function (el, i) {
+        const on = i === index;
+        el.classList.toggle("is-active", on);
+        if (on && !reduceMotion.matches) restartKenBurns(el);
+      });
+      buttons.forEach(function (btn, i) {
+        const on = i === index;
+        btn.classList.toggle("is-active", on);
+        if (on) btn.setAttribute("aria-current", "true");
+        else btn.removeAttribute("aria-current");
+      });
+      preload(index + 1);
+    }
+
+    function show(nextTick, immediate) {
+      const prevText = textIndex();
+      tick = nextTick;
+      const nextText = textIndex();
+      const nextPhoto = imageIndex();
+      setPhoto(nextPhoto);
+
+      if (immediate || reduceMotion.matches || prevText === nextText) {
+        setHeadline(nextText, !immediate);
         return;
       }
-      photo.style.transform = "translate3d(0, " + paraY.toFixed(2) + "px, 0) scale(1.12)";
-      frame.style.transform =
-        "perspective(900px) rotateX(" + tiltX.toFixed(2) + "deg) rotateY(" + tiltY.toFixed(2) + "deg)";
-    }
 
-    function requestApply() {
-      if (!ticking) {
-        ticking = true;
-        requestAnimationFrame(apply);
+      const current = headlines[prevText];
+      if (current) {
+        current.classList.add("is-leaving");
+        current.classList.remove("is-active");
       }
+      window.clearTimeout(exitTimer);
+      exitTimer = window.setTimeout(function () {
+        if (current) current.classList.remove("is-leaving");
+        setHeadline(nextText, true);
+      }, EXIT_MS);
     }
 
+    function elapsed() {
+      if (paused) return carried;
+      return carried + (performance.now() - startedAt);
+    }
+
+    function setProgress(ratio) {
+      const i = imageIndex();
+      buttons.forEach(function (btn, idx) {
+        const fill = btn.querySelector(".hero-progress-fill");
+        if (!fill) return;
+        const value = idx === i ? Math.max(0, Math.min(1, ratio)) : 0;
+        fill.style.transform = "scaleX(" + value.toFixed(4) + ")";
+      });
+    }
+
+    function jump(nextTick) {
+      window.clearTimeout(exitTimer);
+      headlines.forEach(function (el) { el.classList.remove("is-leaving"); });
+      carried = 0;
+      startedAt = performance.now();
+      show(nextTick, false);
+      setProgress(0);
+    }
+
+    function onFrame() {
+      if (!paused) {
+        let t = elapsed();
+        if (t >= DURATION) {
+          const steps = Math.floor(t / DURATION);
+          carried = t - steps * DURATION;
+          startedAt = performance.now();
+          show(tick + steps, false);
+          t = carried;
+        }
+        setProgress(t / DURATION);
+      }
+      requestAnimationFrame(onFrame);
+    }
+
+    function pause() {
+      if (paused) return;
+      carried = elapsed();
+      paused = true;
+      hero.classList.add("is-paused");
+    }
+    function resume() {
+      if (!paused) return;
+      startedAt = performance.now();
+      paused = false;
+      hero.classList.remove("is-paused");
+    }
+
+    document.addEventListener("visibilitychange", function () {
+      if (document.hidden) pause();
+      else resume();
+    });
+
+    buttons.forEach(function (btn, i) {
+      btn.addEventListener("click", function () {
+        jump(i);
+      });
+    });
+
+    hero.addEventListener("keydown", function (event) {
+      if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return;
+      if (!hero.contains(document.activeElement)) return;
+      event.preventDefault();
+      const dir = event.key === "ArrowRight" ? 1 : -1;
+      jump(tick + dir);
+    });
+
+    function canParallax() {
+      return (
+        !reduceMotion.matches &&
+        window.matchMedia("(min-width: 861px)").matches
+      );
+    }
+    function applyParallax() {
+      paraTicking = false;
+      if (!paraEnabled) {
+        layer.style.transform = "";
+        return;
+      }
+      layer.style.transform = "translate3d(0, " + paraY.toFixed(2) + "px, 0)";
+    }
     function updateParallax() {
-      if (!enabled) return;
-      const rect = frame.getBoundingClientRect();
+      if (!paraEnabled) return;
+      const rect = hero.getBoundingClientRect();
       const view = window.innerHeight || 1;
       const mid = rect.top + rect.height / 2;
       const offset = (mid - view / 2) / view;
-      paraY = Math.max(-18, Math.min(18, offset * -26));
-      requestApply();
+      paraY = Math.max(-28, Math.min(28, offset * -36));
+      if (!paraTicking) {
+        paraTicking = true;
+        requestAnimationFrame(applyParallax);
+      }
     }
-
-    frame.addEventListener("mousemove", function (event) {
-      if (!enabled) return;
-      const rect = frame.getBoundingClientRect();
-      const x = (event.clientX - rect.left) / rect.width - 0.5;
-      const y = (event.clientY - rect.top) / rect.height - 0.5;
-      tiltY = x * 6;
-      tiltX = y * -5;
-      requestApply();
-    });
-
-    frame.addEventListener("mouseleave", function () {
-      tiltX = 0;
-      tiltY = 0;
-      requestApply();
-    });
-
-    function syncEnabled() {
-      enabled = canMotion();
-      if (!enabled) {
-        tiltX = 0;
-        tiltY = 0;
+    function syncParallax() {
+      paraEnabled = canParallax();
+      if (!paraEnabled) {
         paraY = 0;
-        photo.style.transform = "";
-        frame.style.transform = "";
+        layer.style.transform = "";
       } else {
         updateParallax();
       }
     }
-
-    window.addEventListener(
-      "scroll",
-      function () {
-        if (enabled) updateParallax();
-      },
-      { passive: true }
-    );
-    window.addEventListener("resize", syncEnabled);
+    window.addEventListener("scroll", function () { if (paraEnabled) updateParallax(); }, { passive: true });
+    window.addEventListener("resize", syncParallax);
     if (typeof reduceMotion.addEventListener === "function") {
-      reduceMotion.addEventListener("change", syncEnabled);
+      reduceMotion.addEventListener("change", syncParallax);
     }
-    syncEnabled();
+    syncParallax();
+
+    preload(1);
+    setPhoto(imageIndex());
+    setHeadline(textIndex(), true);
+    setProgress(0);
+    requestAnimationFrame(onFrame);
   }
 
   initLightbox();
   initReveal();
-  initHeroDepth();
+  initHeroSlider();
 })();
